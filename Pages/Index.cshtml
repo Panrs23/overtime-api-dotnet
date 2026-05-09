@@ -1,0 +1,237 @@
+@page
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Overtime API .NET</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <span class="navbar-brand">Overtime API .NET</span>
+            <a class="btn btn-outline-light btn-sm" href="/swagger">Swagger</a>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        <div id="mensaje" class="alert d-none" role="alert"></div>
+
+        <section class="row g-4">
+            <div class="col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-header fw-semibold">Crear empleado</div>
+                    <div class="card-body">
+                        <form id="empleadoForm" class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Nombre</label>
+                                <input id="empleadoNombre" class="form-control" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Correo</label>
+                                <input id="empleadoCorreo" type="email" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Cargo</label>
+                                <input id="empleadoCargo" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Area</label>
+                                <input id="empleadoArea" class="form-control" required>
+                            </div>
+                            <div class="col-12 form-check ms-2">
+                                <input id="empleadoActivo" class="form-check-input" type="checkbox" checked>
+                                <label class="form-check-label">Activo</label>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary w-100" type="submit">Guardar empleado</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">Listado de empleados</span>
+                        <button class="btn btn-sm btn-outline-primary" onclick="cargarEmpleados()">Actualizar</button>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr><th>Id</th><th>Nombre</th><th>Correo</th><th>Area</th><th>Activo</th></tr>
+                            </thead>
+                            <tbody id="empleadosTabla"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="row g-4 mt-1">
+            <div class="col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-header fw-semibold">Crear solicitud de horas extra</div>
+                    <div class="card-body">
+                        <form id="solicitudForm" class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Empleado</label>
+                                <select id="solicitudEmpleado" class="form-select" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Fecha</label>
+                                <input id="solicitudFecha" type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Horas</label>
+                                <input id="solicitudHoras" type="number" min="0.5" step="0.5" class="form-control" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Motivo</label>
+                                <textarea id="solicitudMotivo" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-success w-100" type="submit">Guardar solicitud</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">Solicitudes pendientes</span>
+                        <button class="btn btn-sm btn-outline-primary" onclick="cargarTodo()">Actualizar</button>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr><th>Id</th><th>Empleado</th><th>Fecha</th><th>Horas</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody id="pendientesTabla"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header fw-semibold">Listado de solicitudes</div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr><th>Id</th><th>Empleado</th><th>Fecha</th><th>Horas</th><th>Estado</th></tr>
+                            </thead>
+                            <tbody id="solicitudesTabla"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const api = '';
+
+        function mostrarMensaje(texto, tipo = 'success') {
+            const mensaje = document.getElementById('mensaje');
+            mensaje.className = `alert alert-${tipo}`;
+            mensaje.textContent = texto;
+            setTimeout(() => mensaje.className = 'alert d-none', 3500);
+        }
+
+        async function cargarEmpleados() {
+            const response = await fetch(`${api}/api/empleados`);
+            const empleados = await response.json();
+            document.getElementById('empleadosTabla').innerHTML = empleados.map(e => `
+                <tr>
+                    <td>${e.id}</td><td>${e.nombre}</td><td>${e.correo}</td><td>${e.area}</td><td>${e.activo ? 'Si' : 'No'}</td>
+                </tr>`).join('');
+
+            document.getElementById('solicitudEmpleado').innerHTML = empleados
+                .filter(e => e.activo)
+                .map(e => `<option value="${e.id}">${e.nombre}</option>`)
+                .join('');
+        }
+
+        async function cargarSolicitudes() {
+            const response = await fetch(`${api}/api/horas-extra`);
+            const solicitudes = await response.json();
+            document.getElementById('solicitudesTabla').innerHTML = solicitudes.map(s => `
+                <tr>
+                    <td>${s.id}</td><td>${s.empleadoNombre}</td><td>${s.fecha}</td><td>${s.horas}</td><td>${s.estado}</td>
+                </tr>`).join('');
+        }
+
+        async function cargarPendientes() {
+            const response = await fetch(`${api}/api/horas-extra/pendientes`);
+            const solicitudes = await response.json();
+            document.getElementById('pendientesTabla').innerHTML = solicitudes.map(s => `
+                <tr>
+                    <td>${s.id}</td><td>${s.empleadoNombre}</td><td>${s.fecha}</td><td>${s.horas}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="aprobar(${s.id})">Aprobar</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="rechazar(${s.id})">Rechazar</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        async function aprobar(id) {
+            await fetch(`${api}/api/horas-extra/${id}/aprobar`, { method: 'PUT' });
+            mostrarMensaje('Solicitud aprobada');
+            await cargarTodo();
+        }
+
+        async function rechazar(id) {
+            await fetch(`${api}/api/horas-extra/${id}/rechazar`, { method: 'PUT' });
+            mostrarMensaje('Solicitud rechazada', 'warning');
+            await cargarTodo();
+        }
+
+        async function cargarTodo() {
+            await cargarEmpleados();
+            await cargarSolicitudes();
+            await cargarPendientes();
+        }
+
+        document.getElementById('empleadoForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            await fetch(`${api}/api/empleados`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre: empleadoNombre.value,
+                    correo: empleadoCorreo.value,
+                    cargo: empleadoCargo.value,
+                    area: empleadoArea.value,
+                    activo: empleadoActivo.checked
+                })
+            });
+            event.target.reset();
+            empleadoActivo.checked = true;
+            mostrarMensaje('Empleado creado');
+            await cargarTodo();
+        });
+
+        document.getElementById('solicitudForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            await fetch(`${api}/api/horas-extra`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    empleadoId: Number(solicitudEmpleado.value),
+                    fecha: solicitudFecha.value,
+                    horas: Number(solicitudHoras.value),
+                    motivo: solicitudMotivo.value
+                })
+            });
+            event.target.reset();
+            mostrarMensaje('Solicitud creada');
+            await cargarTodo();
+        });
+
+        cargarTodo();
+    </script>
+</body>
+</html>

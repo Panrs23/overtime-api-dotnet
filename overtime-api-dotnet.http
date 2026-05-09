@@ -1,0 +1,29 @@
+@overtime_api_dotnet_HostAddress = http://localhost:5222
+
+GET {{overtime_api_dotnet_HostAddress}}/api/empleados
+Accept: application/json
+
+###
+
+POST {{overtime_api_dotnet_HostAddress}}/api/empleados
+Content-Type: application/json
+
+{
+  "nombre": "Juan Perez",
+  "correo": "juan@empresa.cl",
+  "cargo": "Analista",
+  "area": "TI",
+  "activo": true
+}
+
+###
+
+POST {{overtime_api_dotnet_HostAddress}}/api/horas-extra
+Content-Type: application/json
+
+{
+  "empleadoId": 1,
+  "fecha": "2026-05-09",
+  "horas": 2.5,
+  "motivo": "Cierre mensual"
+}
