@@ -18,29 +18,15 @@ public class AuthController : ControllerBase
         _context = context;
     }
 
-      [HttpPost("registro")]
-    public async Task<ActionResult<LoginResponseDto>> Registro(Usuario usuario)
-    {
-        _context.Usuarios.Add(usuario);
-        await _context.SaveChangesAsync();
-
-        return new LoginResponseDto
-        {
-            Id = usuario.Id,
-            Nombre = usuario.Nombre,
-            Correo = usuario.Correo,
-            Contrasenia = usuario.Contrasenia,
-            Rol = usuario.Rol
-        };
-    }
 
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto request)
     {
         var usuario = await _context.Usuarios
-            .FirstOrDefaultAsync(u => u.Correo == request.Correo && u.Contrasenia == request.Contrasenia);
+            .FirstOrDefaultAsync(u => u.Correo == request.Correo );
 
-        if (usuario == null)
+
+        if (usuario == null || !BCrypt.Net.BCrypt.Verify(request.Contrasenia, usuario.Contrasenia))
         {
             return Unauthorized(new { message = "Correo o contraseña incorrectos" });
         }
@@ -55,5 +41,22 @@ public class AuthController : ControllerBase
         };
 
         return Ok(response);
+    }
+    
+      [HttpPost("registro")]
+    public async Task<ActionResult<LoginResponseDto>> Registro(Usuario usuario)
+    {
+        usuario.Contrasenia = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasenia);
+        _context.Usuarios.Add(usuario);
+        await _context.SaveChangesAsync();
+
+        return new LoginResponseDto
+        {
+            Id = usuario.Id,
+            Nombre = usuario.Nombre,
+            Correo = usuario.Correo,
+            Contrasenia = usuario.Contrasenia,
+            Rol = usuario.Rol
+        };
     }
 }
