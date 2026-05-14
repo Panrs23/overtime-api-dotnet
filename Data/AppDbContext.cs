@@ -5,9 +5,10 @@ namespace overtime_api_dotnet.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public DbSet<Empleado> Empleados => Set<Empleado>();
-    public DbSet<SolicitudHoraExtra> SolicitudesHorasExtra => Set<SolicitudHoraExtra>();
-    public DbSet<EtlLog> EtlLogs => Set<EtlLog>();
+    public DbSet<Empleado> Empleados { get; set; }
+    public DbSet<SolicitudHoraExtra> SolicitudesHorasExtra { get; set; }
+    public DbSet<EtlLog> EtlLogs { get; set; }
+    public DbSet<Usuario> Usuarios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
